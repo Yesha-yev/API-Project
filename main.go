@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// ===== Struktur Data =====
 type Plant struct {
 	Nama      string `json:"nama"`
 	Musim     string `json:"musim"`
@@ -31,7 +30,6 @@ type Rekomendasi struct {
 	Deskripsi string `json:"deskripsi"`
 }
 
-// ====== DATA UTAMA ======
 var plants = []Plant{
 	{"Padi", "Hujan", "Utara", 95, "Tanaman utama di wilayah utara, cocok di musim hujan dengan curah hujan tinggi."},
 	{"Kedelai", "Hujan", "Utara", 85, "Ditanam setelah padi di musim hujan dengan drainase baik."},
@@ -44,7 +42,6 @@ var plants = []Plant{
 	{"Cabai", "Kemarau", "Tengah", 85, "Hasil baik di tanah gembur saat panas tidak ekstrem."},
 }
 
-// ====== DATA TAMBAHAN ======
 var produksi = map[string]int{
 	"Padi":     95,
 	"Kedelai":  85,
@@ -69,7 +66,6 @@ var pupuk = map[string]string{
 	"tembakau": "ZA 100kg/ha, SP36 75kg/ha, pupuk organik 1,5 ton/ha",
 }
 
-// ===== FUNGSI PENDUKUNG =====
 func getMusimFromMonth(month string) string {
 	month = strings.ToLower(strings.TrimSpace(month))
 	switch month {
@@ -83,10 +79,6 @@ func getMusimFromMonth(month string) string {
 		return "Tidak diketahui"
 	}
 }
-
-// ===== HANDLER API =====
-
-// 1️⃣ Rekomendasi tanaman
 func recommendHandler(w http.ResponseWriter, r *http.Request) {
 	month := r.URL.Query().Get("month")
 	region := r.URL.Query().Get("region")
@@ -127,13 +119,10 @@ func recommendHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
-
-// 2️⃣ Menampilkan semua tanaman
 func plantsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(plants)
 }
 
-// 3️⃣ Panduan perawatan
 func careHandler(w http.ResponseWriter, r *http.Request) {
 	plant := strings.ToLower(r.URL.Query().Get("plant"))
 	if val, ok := tips[plant]; ok {
@@ -148,12 +137,10 @@ func careHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// 4️⃣ Produksi
 func productionHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(produksi)
 }
 
-// 5️⃣ Rekomendasi pupuk
 func fertilizerHandler(w http.ResponseWriter, r *http.Request) {
 	plant := strings.ToLower(r.URL.Query().Get("plant"))
 	if val, ok := pupuk[plant]; ok {
@@ -169,7 +156,6 @@ func fertilizerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// 6️⃣ Simulasi cuaca
 func weatherHandler(w http.ResponseWriter, r *http.Request) {
 	month := strings.ToLower(r.URL.Query().Get("month"))
 	season := getMusimFromMonth(month)
@@ -192,7 +178,6 @@ func weatherHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// 7️⃣ Analisis keseluruhan wilayah
 func analysisHandler(w http.ResponseWriter, r *http.Request) {
 	hasil := map[string]any{
 		"wilayah_utara":   []string{"Padi", "Kedelai"},
@@ -207,7 +192,6 @@ func analysisHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(hasil)
 }
 
-// ===== MAIN =====
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/recommend", recommendHandler).Methods("GET")

@@ -8,7 +8,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <!-- ===== NAVBAR ===== -->
   <nav>
     <button class="nav-btn" onclick="showSection('dashboard')">🏠 Dashboard</button>
     <button class="nav-btn" onclick="showSection('recommend')">🌱 Rekomendasi</button>
@@ -20,9 +19,7 @@
     <button id="darkToggle">🌙</button>
   </nav>
 
-  <!-- ===== MAIN CONTENT ===== -->
   <main>
-    <!-- DASHBOARD -->
     <section id="dashboard" class="active">
       <div class="landing card">
         <h1>🌾 AgroSmart Jember</h1>
@@ -34,10 +31,9 @@
       </div>
     </section>
 
-    <!-- REKOMENDASI -->
     <section id="recommend">
       <div class="card">
-        <h2>🌱 Rekomendasi Tanaman</h2>
+        <h2>Rekomendasi Tanaman</h2>
         <div class="form-row">
           <label>Bulan:</label>
           <select id="month">
@@ -67,19 +63,17 @@
       </div>
     </section>
 
-    <!-- PANDUAN -->
     <section id="care">
       <div class="card">
-        <h2>📖 Panduan Perawatan</h2>
+        <h2>Panduan Perawatan</h2>
         <input type="text" id="careSearch" placeholder="Cari Panduan Penananaman (misal: padi, cabai)..." />
         <div id="careResult"></div>
       </div>
     </section>
 
-    <!-- PRODUKSI -->
     <section id="production">
       <div class="card">
-        <h2>📈 Data Produksi</h2>
+        <h2>Data Produksi</h2>
         <div id="productionResult"></div>
         <div class="chart-container">
           <canvas id="productionChart"></canvas>
@@ -87,34 +81,31 @@
       </div>
     </section>
 
-    <!-- CUACA -->
     <section id="weather">
       <div class="card">
-        <h2>🌦️ Info Cuaca Bulanan</h2>
+        <h2>Info Cuaca Bulanan</h2>
         <div id="weatherResult"></div>
       </div>
     </section>
 
-    <!-- PUPUK -->
     <section id="fertilizer">
       <div class="card">
-        <h2>💧 Rekomendasi Pupuk</h2>
+        <h2>Rekomendasi Pupuk</h2>
         <input type="text" id="fertilizerSearch" placeholder="Cari nama tanaman (misal: padi, cabai)..." />
         <div id="fertilizerResult"></div>
       </div>
     </section>
 
-    <!-- ANALISIS -->
     <section id="analysis">
       <div class="card">
-        <h2>🗺️ Analisis Wilayah</h2>
+        <h2>Analisis Wilayah</h2>
         <div id="analysisResult"></div>
       </div>
     </section>
   </main>
 
   <footer>
-    <p>© 2025 AgroSmart Jember | Dibuat dengan ❤️ menggunakan Go & Chart.js</p>
+    <p>© 2025 AgroSmart Jember | API Rekomendasi Tanaman</p>
   </footer>
 
   <script src="script.js"></script>

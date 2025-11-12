@@ -1,9 +1,8 @@
 let charts = {};
 
-// 🔹 Fungsi membuat grafik
 function makeChart(id, type, labels, data, title, color = "rgba(75,192,192,0.6)") {
   const canvas = document.getElementById(id);
-  if (!canvas) return; // ← cegah error bila elemen belum tersedia
+  if (!canvas) return; 
   const ctx = canvas.getContext("2d");
   if (charts[id]) charts[id].destroy();
 
@@ -31,19 +30,16 @@ function makeChart(id, type, labels, data, title, color = "rgba(75,192,192,0.6)"
   });
 }
 
-// 🔹 Navigasi antar halaman
 function showSection(id) {
   document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" }); // scroll ke atas tiap pindah halaman
 }
 
-// 🔹 Mode Gelap
 document.getElementById("darkToggle").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
 });
 
-// 🔹 Dashboard
 async function loadDashboard() {
   const resRec = await fetch("/recommend?month=Januari&region=Jember Utara");
   const dataRec = await resRec.json();
@@ -70,7 +66,6 @@ async function loadDashboard() {
   );
 }
 
-// 🔹 Rekomendasi tanaman (langsung update setiap pilih)
 ["month", "region", "season"].forEach(id =>
   document.getElementById(id).addEventListener("change", getRekomendasi)
 );
@@ -105,7 +100,6 @@ async function getRekomendasi() {
   makeChart("recommendChart", "bar", labels, values, "Skor Kecocokan Tanaman", "rgba(153,102,255,0.6)");
 }
 
-// 🔹 Produksi
 async function loadProduction() {
   const res = await fetch("/production");
   const data = await res.json();
@@ -119,7 +113,6 @@ async function loadProduction() {
   makeChart("productionChart", "bar", labels, values, "Produksi Tanaman (kuintal/ha)", "rgba(54,162,235,0.6)");
 }
 
-// 🔹 Cuaca
 async function loadWeather() {
   const res = await fetch("/weather?month=Januari");
   const data = await res.json();
@@ -127,7 +120,6 @@ async function loadWeather() {
     <div class="card"><p><b>Musim:</b> ${data.musim}</p><p>${data.info}</p></div>`;
 }
 
-// 🔹 Pupuk (dengan pencarian)
 document.getElementById("fertilizerSearch").addEventListener("input", async (e) => {
   const query = e.target.value.trim();
   const div = document.getElementById("fertilizerResult");
@@ -142,7 +134,6 @@ document.getElementById("fertilizerSearch").addEventListener("input", async (e) 
     : `<div class="card"><h4>${data.tanaman}</h4><p>${data.pupuk}</p><p><i>${data.keterangan}</i></p></div>`;
 });
 
-// 🔹 Panduan (lihat detail)
 document.getElementById("careSearch").addEventListener("input", async (e) => {
   const query = e.target.value.trim();
   const div = document.getElementById("careResult");
@@ -158,7 +149,7 @@ document.getElementById("careSearch").addEventListener("input", async (e) => {
     const preview = data.panduan.length > 100 ? data.panduan.substring(0, 100) + "..." : data.panduan;
     div.innerHTML = `
       <div class="card">
-        <h4>🌿 Panduan untuk ${data.tanaman}</h4>
+        <h4>Panduan untuk ${data.tanaman}</h4>
         <p id="previewText">${preview}</p>
         <p id="fullText" style="display:none;">${data.panduan}</p>
         <button id="toggleDetail" class="detail-btn">Lihat Detail</button>
@@ -175,7 +166,6 @@ document.getElementById("careSearch").addEventListener("input", async (e) => {
   }
 });
 
-// 🔹 Analisis
 async function loadAnalysis() {
   const res = await fetch("/analysis");
   const data = await res.json();
@@ -187,7 +177,6 @@ async function loadAnalysis() {
     </div>`;
 }
 
-// 🔹 Jalankan otomatis saat halaman dimuat
 window.onload = () => {
   loadDashboard();
   getRekomendasi();

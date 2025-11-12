@@ -43,7 +43,6 @@ section.active {
   display: block;
 }
 
-/* === CARD STYLE === */
 .card {
   background: #fff;
   border-radius: 10px;
@@ -52,7 +51,6 @@ section.active {
   margin-bottom: 20px;
 }
 
-/* === CHART CONTAINER === */
 .chart-container {
   max-width: 800px;
   margin: 0 auto;
@@ -63,7 +61,6 @@ canvas {
   height: 350px;
 }
 
-/* === FORM === */
 .form-row {
   display: flex;
   flex-wrap: wrap;
@@ -76,7 +73,6 @@ canvas {
   border-radius: 5px;
 }
 
-/* === INPUT PUPUK === */
 #fertilizerSearch {
   padding: 10px;
   width: 60%;
