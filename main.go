@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -15,6 +16,8 @@ type Plant struct {
 	Wilayah   string `json:"wilayah"`
 	Produksi  int    `json:"produksi"`
 	Deskripsi string `json:"deskripsi"`
+	Tips      string `json:"tips,omitempty"`
+	Pupuk     string `json:"pupuk,omitempty"`
 }
 
 type Response struct {
@@ -30,83 +33,66 @@ type Rekomendasi struct {
 	Deskripsi string `json:"deskripsi"`
 }
 
+// sumber data tunggal
 var plants = []Plant{
-	{"Padi", "Hujan", "Utara", 95, "Tanaman utama di wilayah utara, cocok di musim hujan dengan curah hujan tinggi."},
-	{"Kedelai", "Hujan", "Utara", 85, "Ditanam setelah padi di musim hujan dengan drainase baik."},
-	{"Jagung", "Peralihan", "Tengah", 90, "Tahan terhadap cuaca tidak menentu dan cocok di lahan sedang."},
-	{"Cabai", "Peralihan", "Tengah", 80, "Cocok di tanah gembur dengan sinar matahari cukup."},
-	{"Tembakau", "Kemarau", "Selatan", 98, "Unggulan Jember bagian selatan pada musim kemarau."},
-	{"Jagung", "Kemarau", "Selatan", 85, "Tahan panas dan minim curah hujan."},
-	{"Padi", "Peralihan", "Utara", 80, "Masih cocok ditanam di awal musim peralihan."},
-	{"Kedelai", "Kemarau", "Utara", 70, "Masih bisa tumbuh di akhir kemarau dengan irigasi cukup."},
-	{"Cabai", "Kemarau", "Tengah", 85, "Hasil baik di tanah gembur saat panas tidak ekstrem."},
+	{"Padi", "Hujan", "Utara", 95, "Tanaman utama di wilayah utara, cocok di musim hujan dengan curah hujan tinggi.", "Gunakan sistem irigasi yang baik dan pupuk organik.Gunakan sistem irigasi yang baik dan pupuk organik.Gunakan sistem irigasi yang baik dan pupuk organik.", "Urea 100kg/ha, NPK 150kg/ha, pupuk organik 2 ton/ha"},
+	{"Kedelai", "Hujan", "Utara", 85, "Ditanam setelah padi di musim hujan dengan drainase baik.", "Tanam di tanah gembur dan hindari genangan air.", "NPK 100kg/ha, Pupuk kandang 1 ton/ha"},
+	{"Jagung", "Peralihan", "Tengah", 90, "Tahan terhadap cuaca tidak menentu dan cocok di lahan sedang.", "Pastikan sinar matahari cukup dan pengairan teratur.", "Urea 120kg/ha, KCl 50kg/ha, NPK 100kg/ha"},
+	{"Cabai", "Peralihan", "Tengah", 80, "Cocok di tanah gembur dengan sinar matahari cukup.", "Gunakan mulsa plastik hitam perak untuk menjaga kelembapan.", "Kompos 2 ton/ha, NPK 200kg/ha, dolomit 100kg/ha"},
+	{"Tembakau", "Kemarau", "Selatan", 98, "Unggulan Jember bagian selatan pada musim kemarau.", "Cocok di musim kemarau, hindari curah hujan tinggi.", "ZA 100kg/ha, SP36 75kg/ha, pupuk organik 1,5 ton/ha"},
+	{"Jagung", "Kemarau", "Selatan", 85, "Tahan panas dan minim curah hujan.", "Pastikan sinar matahari cukup dan pengairan teratur.", "Urea 120kg/ha, KCl 50kg/ha, NPK 100kg/ha"},
+	{"Padi", "Peralihan", "Utara", 80, "Masih cocok ditanam di awal musim peralihan.", "Gunakan sistem irigasi yang baik dan pupuk organik.Gunakan sistem irigasi yang baik dan pupuk organik.Gunakan sistem irigasi yang baik dan pupuk organik.", "Urea 100kg/ha, NPK 150kg/ha"},
+	{"Kedelai", "Kemarau", "Utara", 70, "Masih bisa tumbuh di akhir kemarau dengan irigasi cukup.", "Tanam di tanah gembur dan hindari genangan air.", "NPK 100kg/ha, Pupuk kandang 1 ton/ha"},
+	{"Cabai", "Kemarau", "Tengah", 85, "Hasil baik di tanah gembur saat panas tidak ekstrem.", "Gunakan mulsa plastik hitam perak untuk menjaga kelembapan.", "Kompos 2 ton/ha, NPK 200kg/ha"},
 }
 
-var produksi = map[string]map[string]int{
-	"Utara": {
-		"Padi":          95,
-		"Kedelai":       85,
-		"Jagung":        88,
-		"Cabai Rawit":   76,
-		"Tembakau":      80,
-		"Tebu Sawah":    70,
-		"Kopi Robusta":  82,
-		"Keprok / Siam": 79,
-		"Cabai Besar":   77,
-		"Tomat":         83,
-		"Bawang Merah":  85,
-		"Alpukat":       90,
-		"Duku":          72,
-		"Durian":        68,
-	},
-	"Tengah": {
-		"Padi":          88,
-		"Kedelai":       80,
-		"Jagung":        90,
-		"Cabai Rawit":   82,
-		"Tembakau":      85,
-		"Tebu Sawah":    75,
-		"Kopi Robusta":  85,
-		"Keprok / Siam": 81,
-		"Cabai Besar":   79,
-		"Tomat":         84,
-		"Bawang Merah":  86,
-		"Alpukat":       88,
-		"Duku":          75,
-		"Durian":        70,
-	},
-	"Selatan": {
-		"Padi":          82,
-		"Kedelai":       75,
-		"Jagung":        85,
-		"Cabai Rawit":   88,
-		"Tembakau":      98,
-		"Tebu Sawah":    78,
-		"Kopi Robusta":  90,
-		"Keprok / Siam": 84,
-		"Cabai Besar":   83,
-		"Tomat":         85,
-		"Bawang Merah":  80,
-		"Alpukat":       92,
-		"Duku":          78,
-		"Durian":        74,
-	},
+// helper: generate produksi per wilayah dari plants (tidak menyimpan data redundant)
+func getProduksiPerWilayah() map[string]map[string]int {
+	hasil := make(map[string]map[string]int)
+	for _, p := range plants {
+		// gunakan nama wilayah konsisten (mis. kapitalisasi)
+		region := strings.Title(strings.ToLower(strings.TrimSpace(p.Wilayah)))
+		if hasil[region] == nil {
+			hasil[region] = make(map[string]int)
+		}
+		// jika ada beberapa entri sama (mis. padi di utara dua entri), pilih yang terbesar
+		existing, ok := hasil[region][p.Nama]
+		if !ok || p.Produksi > existing {
+			hasil[region][p.Nama] = p.Produksi
+		}
+	}
+	return hasil
 }
 
-var tips = map[string]string{
-	"padi":     "Gunakan sistem irigasi yang baik dan pupuk organik.",
-	"kedelai":  "Tanam di tanah gembur dan hindari genangan air.",
-	"jagung":   "Pastikan sinar matahari cukup dan pengairan teratur.",
-	"cabai":    "Gunakan mulsa plastik hitam perak untuk menjaga kelembapan.",
-	"tembakau": "Cocok di musim kemarau, hindari curah hujan tinggi.",
+// helper: cari top produksi global (tanaman dan nilai)
+func getTopProduksiGlobal() (string, int, string) {
+	data := getProduksiPerWilayah()
+	topName := "-"
+	topVal := 0
+	topWilayah := "-"
+	for wilayah, m := range data {
+		for nama, val := range m {
+			if val > topVal {
+				topVal = val
+				topName = nama
+				topWilayah = wilayah
+			}
+		}
+	}
+	return topName, topVal, topWilayah
 }
 
-var pupuk = map[string]string{
-	"padi":     "Urea 100kg/ha, NPK 150kg/ha, pupuk organik 2 ton/ha",
-	"kedelai":  "NPK 100kg/ha, Pupuk kandang 1 ton/ha",
-	"jagung":   "Urea 120kg/ha, KCl 50kg/ha, NPK 100kg/ha",
-	"cabai":    "Kompos 2 ton/ha, NPK 200kg/ha, dolomit 100kg/ha",
-	"tembakau": "ZA 100kg/ha, SP36 75kg/ha, pupuk organik 1,5 ton/ha",
+// helper: cari tanaman berdasarkan nama (case-insensitive)
+func findPlantByName(name string) *Plant {
+	name = strings.ToLower(strings.TrimSpace(name))
+	for _, p := range plants {
+		if strings.ToLower(p.Nama) == name {
+			// return pointer to local copy (safe here since p is loop variable)
+			cp := p
+			return &cp
+		}
+	}
+	return nil
 }
 
 func getMusimFromMonth(month string) string {
@@ -122,83 +108,121 @@ func getMusimFromMonth(month string) string {
 		return "Tidak diketahui"
 	}
 }
+
+// rekomendasi: gunakan data plants (satu sumber kebenaran)
 func recommendHandler(w http.ResponseWriter, r *http.Request) {
-	month := r.URL.Query().Get("month")
-	region := r.URL.Query().Get("region")
-	season := r.URL.Query().Get("season")
+    month := r.URL.Query().Get("month")
+    region := r.URL.Query().Get("region")
+    season := r.URL.Query().Get("season")
 
-	if season == "" {
-		season = getMusimFromMonth(month)
-	}
+    if season == "" {
+        season = getMusimFromMonth(month)
+    }
 
-	var recs []Rekomendasi
+    var recs []Rekomendasi
 
-	for _, plant := range plants {
-		skor := 0
-		if strings.EqualFold(plant.Musim, season) {
-			skor += 40
-		}
-		if strings.Contains(strings.ToLower(region), strings.ToLower(plant.Wilayah)) {
-			skor += 40
-		}
-		skor += plant.Produksi / 3
+    for _, plant := range plants {
+        skor := 0
+        if strings.EqualFold(plant.Musim, season) {
+            skor += 40
+        }
+        
+        // Perbaikan pencocokan wilayah dengan normalisasi yang lebih baik
+        if region != "" {
+            // Normalisasi region input
+            region = strings.ToLower(strings.TrimSpace(region))
+            
+            // Ekstrak bagian wilayah (utara/tengah/selatan)
+            var regionPart string
+            if strings.Contains(region, "utara") {
+                regionPart = "utara"
+            } else if strings.Contains(region, "tengah") {
+                regionPart = "tengah"
+            } else if strings.Contains(region, "selatan") {
+                regionPart = "selatan"
+            }
+            
+            if regionPart != "" && strings.EqualFold(regionPart, strings.ToLower(plant.Wilayah)) {
+                skor += 40
+            }
+        }
+        
+        skor += plant.Produksi / 3
 
-		if skor > 60 {
-			recs = append(recs, Rekomendasi{
-				Tanaman:   plant.Nama,
-				Skor:      skor,
-				Deskripsi: plant.Deskripsi,
-			})
-		}
-	}
+        if skor > 60 {
+            recs = append(recs, Rekomendasi{
+                Tanaman:   plant.Nama,
+                Skor:      skor,
+                Deskripsi: plant.Deskripsi,
+            })
+        }
+    }
 
-	resp := Response{
-		Bulan:       month,
-		Musim:       season,
-		Wilayah:     region,
-		Rekomendasi: recs,
-	}
+    // urutkan rekomendasi berdasarkan skor desc
+    sort.Slice(recs, func(i, j int) bool {
+        return recs[i].Skor > recs[j].Skor
+    })
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+    resp := Response{
+        Bulan:       month,
+        Musim:       season,
+        Wilayah:     region,
+        Rekomendasi: recs,
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(resp)
 }
+
 func plantsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(plants)
 }
 
+// careHandler sekarang mengambil dari plants (tidak perlu map terpisah)
 func careHandler(w http.ResponseWriter, r *http.Request) {
-	plant := strings.ToLower(r.URL.Query().Get("plant"))
-	if val, ok := tips[plant]; ok {
-		json.NewEncoder(w).Encode(map[string]string{
-			"tanaman": plant,
-			"panduan": val,
-		})
-	} else {
-		json.NewEncoder(w).Encode(map[string]string{
-			"error": "Tanaman tidak ditemukan",
-		})
+	plantName := r.URL.Query().Get("plant")
+	if plantName == "" {
+		http.Error(w, "missing plant parameter", http.StatusBadRequest)
+		return
 	}
+	p := findPlantByName(plantName)
+	if p == nil {
+		json.NewEncoder(w).Encode(map[string]string{"error": "Tanaman tidak ditemukan"})
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]string{
+		"tanaman": p.Nama,
+		"panduan": p.Tips,
+	})
 }
 
+// productionHandler membangun hasil dari plants — tidak ada data redundant
 func productionHandler(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(produksi)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(getProduksiPerWilayah())
 }
 
+// fertilizerHandler mengambil info pupuk dari plants
 func fertilizerHandler(w http.ResponseWriter, r *http.Request) {
-	plant := strings.ToLower(r.URL.Query().Get("plant"))
-	if val, ok := pupuk[plant]; ok {
-		json.NewEncoder(w).Encode(map[string]string{
-			"tanaman":   plant,
-			"pupuk":     val,
-			"keterangan": "Rekomendasi dosis berdasarkan rata-rata hasil panen terbaik.",
-		})
-	} else {
-		json.NewEncoder(w).Encode(map[string]string{
-			"error": "Tanaman tidak ditemukan",
-		})
+	plantName := r.URL.Query().Get("plant")
+	if plantName == "" {
+		http.Error(w, "missing plant parameter", http.StatusBadRequest)
+		return
 	}
+	p := findPlantByName(plantName)
+	if p == nil {
+		json.NewEncoder(w).Encode(map[string]string{"error": "Tanaman tidak ditemukan"})
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]string{
+		"tanaman":    p.Nama,
+		"pupuk":      p.Pupuk,
+		"keterangan": "Rekomendasi dosis berdasarkan rata-rata hasil panen terbaik.",
+	})
 }
 
+// weatherHandler tetap sederhana
 func weatherHandler(w http.ResponseWriter, r *http.Request) {
 	month := strings.ToLower(r.URL.Query().Get("month"))
 	season := getMusimFromMonth(month)
@@ -214,25 +238,75 @@ func weatherHandler(w http.ResponseWriter, r *http.Request) {
 		info = "Data cuaca tidak tersedia untuk bulan tersebut."
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"bulan": month,
+		"bulan": strings.Title(month),
 		"musim": season,
 		"info":  info,
 	})
 }
 
+// analysisHandler: generik & otomatis berdasarkan data 'plants'
+// Menghasilkan: daftar tanaman per wilayah, produksi tertinggi global, dan ringkasan musim terbaik.
 func analysisHandler(w http.ResponseWriter, r *http.Request) {
-	hasil := map[string]any{
-		"wilayah_utara":   []string{"Padi", "Kedelai"},
-		"wilayah_tengah":  []string{"Jagung", "Cabai"},
-		"wilayah_selatan": []string{"Tembakau", "Jagung"},
-		"musim_terbaik":   "Kemarau dan Peralihan",
-		"produksi_tertinggi": map[string]any{
-			"tanaman": "Tembakau",
-			"nilai":   98,
-		},
+	prod := getProduksiPerWilayah()
+
+	// kumpulkan nama tanaman per wilayah (unique)
+	wilUtara := []string{}
+	wilTengah := []string{}
+	wilSelatan := []string{}
+	for wilayah, m := range prod {
+		names := make([]string, 0, len(m))
+		for nama := range m {
+			names = append(names, nama)
+		}
+		// sort agar konsisten
+		sort.Strings(names)
+		switch strings.ToLower(wilayah) {
+		case "utara":
+			wilUtara = names
+		case "tengah":
+			wilTengah = names
+		case "selatan":
+			wilSelatan = names
+		}
 	}
-	json.NewEncoder(w).Encode(hasil)
+
+	// produksi tertinggi global
+	topTanaman, topNilai, _ := getTopProduksiGlobal()
+
+	// musim terbaik: hitung frekuensi tanaman per musim
+	freq := map[string]int{}
+	for _, p := range plants {
+		freq[p.Musim]++
+	}
+	// ambil musim/urutan tertinggi
+	type mf struct {
+		M string
+		F int
+	}
+	mfs := []mf{}
+	for k, v := range freq {
+		mfs = append(mfs, mf{M: k, F: v})
+	}
+	sort.Slice(mfs, func(i, j int) bool { return mfs[i].F > mfs[j].F })
+	musimTerbaik := []string{}
+	for _, x := range mfs {
+		musimTerbaik = append(musimTerbaik, x.M)
+	}
+
+	result := map[string]interface{}{
+		"wilayah_utara":       wilUtara,
+		"wilayah_tengah":      wilTengah,
+		"wilayah_selatan":     wilSelatan,
+		"produksi_tertinggi":  map[string]interface{}{"tanaman": topTanaman, "nilai": topNilai},
+		"musim_berurut":       musimTerbaik, // musim terurut menurut jumlah entri tanaman
+		"total_tanaman":       len(plants),
+		"produksi_per_wilayah": prod,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
 }
 
 func main() {
@@ -245,9 +319,10 @@ func main() {
 	r.HandleFunc("/weather", weatherHandler).Methods("GET")
 	r.HandleFunc("/analysis", analysisHandler).Methods("GET")
 
+	// serve static files from ./public
 	fs := http.FileServer(http.Dir("./public"))
 	r.PathPrefix("/").Handler(http.StripPrefix("/", fs))
 
-	log.Println("🌾 Server berjalan di http://localhost:8080")
+	log.Println("Server berjalan di http://localhost:8080")
 	http.ListenAndServe(":8080", r)
 }
