@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AgroSmart Jember</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -14,28 +15,23 @@
     <button class="nav-btn" onclick="showSection('recommend')">Rekomendasi</button>
     <button class="nav-btn" onclick="showSection('care')">Panduan</button>
     <button class="nav-btn" onclick="showSection('production')">Produksi</button>
-    <button class="nav-btn" onclick="showSection('weather')">Cuaca</button>
     <button class="nav-btn" onclick="showSection('fertilizer')">Pupuk</button>
+    <button class="nav-btn" onclick="showSection('analysis')">Analisis</button>
     <button id="darkToggle">🌙</button>
   </nav>
 
   <main>
-
-    <!-- DASHBOARD -->
     <section id="dashboard" class="active">
       <div class="landing card">
         <h1>AgroSmart Jember</h1>
         <p>Platform Digital Rekomendasi Tanaman & Manajemen Pertanian</p>
       </div>
-
       <div id="summary" class="card"></div>
-
       <div class="chart-container">
         <canvas id="regionChart"></canvas>
       </div>
     </section>
 
-    <!-- REKOMENDASI -->
     <section id="recommend">
       <div class="card">
         <h2>Rekomendasi Tanaman</h2>
@@ -57,59 +53,51 @@
 
           <label>Wilayah:</label>
           <select id="region">
-            <option>Utara</option>
-            <option>Tengah</option>
-            <option>Selatan</option>
+            <option>Jember Utara</option>
+            <option>Jember Tengah</option>
+            <option>Jember Selatan</option>
           </select>
         </div>
 
         <div id="result"></div>
-
         <div class="chart-container">
           <canvas id="recommendChart"></canvas>
         </div>
       </div>
     </section>
 
-    <!-- PERAWATAN -->
     <section id="care">
       <div class="card">
         <h2>Panduan Perawatan</h2>
-        <input type="text" id="careSearch" placeholder="Cari tanaman (misal: padi, cabai)..." />
+        <input type="text" id="careSearch" placeholder="Cari Panduan Penananaman (misal: padi, cabai)..." />
         <div id="careResult"></div>
       </div>
     </section>
 
-    <!-- PRODUKSI -->
     <section id="production">
       <div class="card">
-        <h2>Data Produksi Tanaman</h2>
-
+        <h2>Data Produksi</h2>
         <div id="productionResult"></div>
-
         <div class="chart-container">
           <canvas id="productionChart"></canvas>
         </div>
       </div>
     </section>
 
-    <!-- CUACA -->
-    <section id="weather">
-      <div class="card">
-        <h2>Info Cuaca Bulanan</h2>
-        <div id="weatherResult"></div>
-      </div>
-    </section>
-
-    <!-- PUPUK -->
     <section id="fertilizer">
       <div class="card">
         <h2>Rekomendasi Pupuk</h2>
-        <input type="text" id="fertilizerSearch" placeholder="Cari tanaman (misal: padi, cabai)..." />
+        <input type="text" id="fertilizerSearch" placeholder="Cari nama tanaman (misal: padi, cabai)..." />
         <div id="fertilizerResult"></div>
       </div>
     </section>
 
+    <section id="analysis">
+      <div class="card">
+        <h2>Analisis Wilayah</h2>
+        <div id="analysisResult"></div>
+      </div>
+    </section>
   </main>
 
   <footer>
@@ -117,5 +105,6 @@
   </footer>
 
   <script src="script.js"></script>
+
 </body>
 </html>

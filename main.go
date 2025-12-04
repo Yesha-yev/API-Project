@@ -33,7 +33,6 @@ type Rekomendasi struct {
 	Deskripsi string `json:"deskripsi"`
 }
 
-// sumber data tunggal
 var plants = []Plant{
 	{"Padi", "Hujan", "Utara", 95, "Tanaman utama di wilayah utara, cocok di musim hujan dengan curah hujan tinggi.", "Gunakan sistem irigasi yang baik dan pupuk organik.Gunakan sistem irigasi yang baik dan pupuk organik.Gunakan sistem irigasi yang baik dan pupuk organik.", "Urea 100kg/ha, NPK 150kg/ha, pupuk organik 2 ton/ha"},
 	{"Kedelai", "Hujan", "Utara", 85, "Ditanam setelah padi di musim hujan dengan drainase baik.", "Tanam di tanah gembur dan hindari genangan air.", "NPK 100kg/ha, Pupuk kandang 1 ton/ha"},
@@ -46,16 +45,13 @@ var plants = []Plant{
 	{"Cabai", "Kemarau", "Tengah", 85, "Hasil baik di tanah gembur saat panas tidak ekstrem.", "Gunakan mulsa plastik hitam perak untuk menjaga kelembapan.", "Kompos 2 ton/ha, NPK 200kg/ha"},
 }
 
-// helper: generate produksi per wilayah dari plants (tidak menyimpan data redundant)
 func getProduksiPerWilayah() map[string]map[string]int {
 	hasil := make(map[string]map[string]int)
 	for _, p := range plants {
-		// gunakan nama wilayah konsisten (mis. kapitalisasi)
 		region := strings.Title(strings.ToLower(strings.TrimSpace(p.Wilayah)))
 		if hasil[region] == nil {
 			hasil[region] = make(map[string]int)
 		}
-		// jika ada beberapa entri sama (mis. padi di utara dua entri), pilih yang terbesar
 		existing, ok := hasil[region][p.Nama]
 		if !ok || p.Produksi > existing {
 			hasil[region][p.Nama] = p.Produksi
@@ -64,7 +60,6 @@ func getProduksiPerWilayah() map[string]map[string]int {
 	return hasil
 }
 
-// helper: cari top produksi global (tanaman dan nilai)
 func getTopProduksiGlobal() (string, int, string) {
 	data := getProduksiPerWilayah()
 	topName := "-"
@@ -82,12 +77,10 @@ func getTopProduksiGlobal() (string, int, string) {
 	return topName, topVal, topWilayah
 }
 
-// helper: cari tanaman berdasarkan nama (case-insensitive)
 func findPlantByName(name string) *Plant {
 	name = strings.ToLower(strings.TrimSpace(name))
 	for _, p := range plants {
 		if strings.ToLower(p.Nama) == name {
-			// return pointer to local copy (safe here since p is loop variable)
 			cp := p
 			return &cp
 		}
@@ -109,7 +102,6 @@ func getMusimFromMonth(month string) string {
 	}
 }
 
-// rekomendasi: gunakan data plants (satu sumber kebenaran)
 func recommendHandler(w http.ResponseWriter, r *http.Request) {
     month := r.URL.Query().Get("month")
     region := r.URL.Query().Get("region")
@@ -127,12 +119,9 @@ func recommendHandler(w http.ResponseWriter, r *http.Request) {
             skor += 40
         }
         
-        // Perbaikan pencocokan wilayah dengan normalisasi yang lebih baik
         if region != "" {
-            // Normalisasi region input
             region = strings.ToLower(strings.TrimSpace(region))
             
-            // Ekstrak bagian wilayah (utara/tengah/selatan)
             var regionPart string
             if strings.Contains(region, "utara") {
                 regionPart = "utara"
@@ -158,7 +147,6 @@ func recommendHandler(w http.ResponseWriter, r *http.Request) {
         }
     }
 
-    // urutkan rekomendasi berdasarkan skor desc
     sort.Slice(recs, func(i, j int) bool {
         return recs[i].Skor > recs[j].Skor
     })
@@ -179,7 +167,6 @@ func plantsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(plants)
 }
 
-// careHandler sekarang mengambil dari plants (tidak perlu map terpisah)
 func careHandler(w http.ResponseWriter, r *http.Request) {
 	plantName := r.URL.Query().Get("plant")
 	if plantName == "" {
@@ -197,13 +184,11 @@ func careHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// productionHandler membangun hasil dari plants — tidak ada data redundant
 func productionHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(getProduksiPerWilayah())
 }
 
-// fertilizerHandler mengambil info pupuk dari plants
 func fertilizerHandler(w http.ResponseWriter, r *http.Request) {
 	plantName := r.URL.Query().Get("plant")
 	if plantName == "" {
@@ -222,7 +207,6 @@ func fertilizerHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// weatherHandler tetap sederhana
 func weatherHandler(w http.ResponseWriter, r *http.Request) {
 	month := strings.ToLower(r.URL.Query().Get("month"))
 	season := getMusimFromMonth(month)
@@ -246,12 +230,9 @@ func weatherHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// analysisHandler: generik & otomatis berdasarkan data 'plants'
-// Menghasilkan: daftar tanaman per wilayah, produksi tertinggi global, dan ringkasan musim terbaik.
 func analysisHandler(w http.ResponseWriter, r *http.Request) {
 	prod := getProduksiPerWilayah()
 
-	// kumpulkan nama tanaman per wilayah (unique)
 	wilUtara := []string{}
 	wilTengah := []string{}
 	wilSelatan := []string{}
@@ -260,7 +241,6 @@ func analysisHandler(w http.ResponseWriter, r *http.Request) {
 		for nama := range m {
 			names = append(names, nama)
 		}
-		// sort agar konsisten
 		sort.Strings(names)
 		switch strings.ToLower(wilayah) {
 		case "utara":
@@ -272,15 +252,12 @@ func analysisHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// produksi tertinggi global
 	topTanaman, topNilai, _ := getTopProduksiGlobal()
 
-	// musim terbaik: hitung frekuensi tanaman per musim
 	freq := map[string]int{}
 	for _, p := range plants {
 		freq[p.Musim]++
 	}
-	// ambil musim/urutan tertinggi
 	type mf struct {
 		M string
 		F int
@@ -300,7 +277,7 @@ func analysisHandler(w http.ResponseWriter, r *http.Request) {
 		"wilayah_tengah":      wilTengah,
 		"wilayah_selatan":     wilSelatan,
 		"produksi_tertinggi":  map[string]interface{}{"tanaman": topTanaman, "nilai": topNilai},
-		"musim_berurut":       musimTerbaik, // musim terurut menurut jumlah entri tanaman
+		"musim_berurut":       musimTerbaik, 
 		"total_tanaman":       len(plants),
 		"produksi_per_wilayah": prod,
 	}
@@ -319,7 +296,6 @@ func main() {
 	r.HandleFunc("/weather", weatherHandler).Methods("GET")
 	r.HandleFunc("/analysis", analysisHandler).Methods("GET")
 
-	// serve static files from ./public
 	fs := http.FileServer(http.Dir("./public"))
 	r.PathPrefix("/").Handler(http.StripPrefix("/", fs))
 
