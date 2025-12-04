@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-
 	"github.com/gorilla/mux"
 )
 
@@ -38,14 +37,14 @@ var plants = []Plant{
 	{"Kedelai", "Hujan", "Utara", 85, "Ditanam setelah padi di musim hujan dengan drainase baik.", "Tanam di tanah gembur dan hindari genangan air.", "NPK 100kg/ha, Pupuk kandang 1 ton/ha"},
 	{"Jagung", "Peralihan", "Tengah", 90, "Tahan terhadap cuaca tidak menentu dan cocok di lahan sedang.", "Pastikan sinar matahari cukup dan pengairan teratur.", "Urea 120kg/ha, KCl 50kg/ha, NPK 100kg/ha"},
 	{"Cabai", "Peralihan", "Tengah", 80, "Cocok di tanah gembur dengan sinar matahari cukup.", "Gunakan mulsa plastik hitam perak untuk menjaga kelembapan.", "Kompos 2 ton/ha, NPK 200kg/ha, dolomit 100kg/ha"},
-	{"Tembakau", "Kemarau", "Selatan", 98, "Unggulan Jember bagian selatan pada musim kemarau.", "Cocok di musim kemarau, hindari curah hujan tinggi.", "ZA 100kg/ha, SP36 75kg/ha, pupuk organik 1,5 ton/ha"},
+	{"Tembakau", "Kemarau", "Selatan", 95, "Unggulan Jember bagian selatan pada musim kemarau.", "Cocok di musim kemarau, hindari curah hujan tinggi.", "ZA 100kg/ha, SP36 75kg/ha, pupuk organik 1,5 ton/ha"},
 	{"Jagung", "Kemarau", "Selatan", 85, "Tahan panas dan minim curah hujan.", "Pastikan sinar matahari cukup dan pengairan teratur.", "Urea 120kg/ha, KCl 50kg/ha, NPK 100kg/ha"},
 	{"Padi", "Peralihan", "Utara", 80, "Masih cocok ditanam di awal musim peralihan.", "Gunakan sistem irigasi yang baik dan pupuk organik.Gunakan sistem irigasi yang baik dan pupuk organik.Gunakan sistem irigasi yang baik dan pupuk organik.", "Urea 100kg/ha, NPK 150kg/ha"},
 	{"Kedelai", "Kemarau", "Utara", 70, "Masih bisa tumbuh di akhir kemarau dengan irigasi cukup.", "Tanam di tanah gembur dan hindari genangan air.", "NPK 100kg/ha, Pupuk kandang 1 ton/ha"},
 	{"Cabai", "Kemarau", "Tengah", 85, "Hasil baik di tanah gembur saat panas tidak ekstrem.", "Gunakan mulsa plastik hitam perak untuk menjaga kelembapan.", "Kompos 2 ton/ha, NPK 200kg/ha"},
 }
 
-func getProduksiPerWilayah() map[string]map[string]int {
+func getProdperWil() map[string]map[string]int {
 	hasil := make(map[string]map[string]int)
 	for _, p := range plants {
 		region := strings.Title(strings.ToLower(strings.TrimSpace(p.Wilayah)))
@@ -61,7 +60,7 @@ func getProduksiPerWilayah() map[string]map[string]int {
 }
 
 func getTopProduksiGlobal() (string, int, string) {
-	data := getProduksiPerWilayah()
+	data := getProdperWil()
 	topName := "-"
 	topVal := 0
 	topWilayah := "-"
@@ -186,7 +185,7 @@ func careHandler(w http.ResponseWriter, r *http.Request) {
 
 func productionHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(getProduksiPerWilayah())
+	json.NewEncoder(w).Encode(getProdperWil())
 }
 
 func fertilizerHandler(w http.ResponseWriter, r *http.Request) {
@@ -231,7 +230,7 @@ func weatherHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func analysisHandler(w http.ResponseWriter, r *http.Request) {
-	prod := getProduksiPerWilayah()
+	prod := getProdperWil()
 
 	wilUtara := []string{}
 	wilTengah := []string{}

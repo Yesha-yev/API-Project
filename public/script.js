@@ -317,9 +317,9 @@ function setupEventListeners() {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener("change", () => {
-        console.log("Changed:", id, "value:", el.value); // Debug
-        loadRecommend(); // Update rekomendasi
-        loadDashboard(); // Update dashboard
+        console.log("Changed:", id, "value:", el.value); 
+        loadRecommend();
+        loadDashboard(); 
       });
     }
   });
